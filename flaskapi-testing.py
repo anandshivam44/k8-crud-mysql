@@ -19,29 +19,8 @@ except:
     print("Database already exists or there was an error")
 
 mysql = MySQL()
-# conn = mysql.connect()
-# cursor = conn.cursor()
-# cursor.execute("CREATE DATABASE flaskapi")
-# cursor.close()
-# conn.close()
-
-# conn = mysql.connect()
-# cursor = conn.cursor()
-# cursor.execute("USE flaskapi")
-# cursor.close()
-# conn.close()
-
-# conn = mysql.connect()
-# cursor = conn.cursor()
-# cursor.execute("CREATE TABLE users(user_id INT PRIMARY KEY AUTO_INCREMENT, user_name VARCHAR(255), user_email VARCHAR(255), user_password VARCHAR(255))")
-# cursor.close()
-# conn.close()
-
-
 app = Flask(__name__)
 
-
-# MySQL configurations
 try:
     print(os.getenv("MYSQL_DATABASE_HOST"))
     print(os.getenv("MYSQL_DATABASE_PASSWORD"))

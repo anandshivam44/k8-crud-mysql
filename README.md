@@ -1,12 +1,12 @@
 # Deploying a Flask API and MySQL server on Kubernetes
 
 Objective:
-- [x] Build a Docker container running a CRUD Application using python and Flask 
+- [x] Build a Docker container running a CRUD [Create, Read, Edit, Delete] Application using python and Flask 
 - [x] Pull pre-configured SQL server container from the writer's(me) docker hub repo  
 - [x] Deploys a MySQL server on a Kubernetes cluster
 - [x] Attaches a persistent volume to it, so the data remains contained if pods are restarting
 - [x] Deploys a Flask API to add, delete and modify users in the MySQL database
-- [ ] Automate deployment using helm. Coming Soon.
+- [ ] Automate deployment using helm. `coming soon`.
 
 #### Prerequisites for the host machine
  - hypervisor installed to use minikube
@@ -14,7 +14,22 @@ Objective:
  - docker installed
  - kubectl installed
 
-
+#### tree . 
+```markdown
+.
+├── configmap.yaml              ConfigMap to get service url
+├── crud-application            
+│   ├── Dockerfile              Dockerfile to build your own image
+│   ├── flaskapi.py             CRUD API python application using Flask
+│   └── requirements.txt        contains all libraries needed by python application
+├── flaskapi-testing.py         a python crud application for testing
+├── flaskapp-deployment.yml     yaml file to deploy your CRUD Application
+├── helm-charts                 helm charts coming soon
+├── mysql-deployment.yaml       yaml file to deploy mysql server
+├── README.md                   this README file you are reading now
+├── refer.sh                    a list of helpful commands
+└── secret.yaml                 yaml file to store secret in k8 cluster
+```
 ### Step 0: Getting Started
  - Clone this repo
 ```bash
@@ -26,9 +41,11 @@ cd k8-crud-mysql
 ```bash
 eval $(minikube docker-env)
 ```
+ - Refer `refer.sh` file. It contains a list of commands that might at times be very useful
 ### Step 1: Build your python application into a Docker container 
 
 Here is the content of the Dockerfile. It installs necessary libraries and requirements.
+`Optional`: Prebuilt image cab be found at hub.docker.com/repository/docker/anandshivam44/crud-api-python
 
 Our app flaskapi.py is running on port 5000 and hence exposing port 5000
 ```shell
@@ -82,7 +99,7 @@ About this container. What has already been done:
  2) The container has been provisioned to be accessed outside the container.
 
 These two steps are already configured in this container to remove overhead, but you can always manually pull and configure your MySQL server.
-
+Link to the container hub.docker.com/repository/docker/anandshivam44/mysql
  - Run the container
 ```bash
 docker container run -d -p 3306:3306 anandshivam44/mysql:latest
