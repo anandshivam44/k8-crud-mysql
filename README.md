@@ -1,11 +1,12 @@
 # Deploying a Flask API and MySQL server on Kubernetes
 
 Objective:
-1) Build a Docker container running a CRUD Application using python and Flask 
-2) Pull pre-configured SQL server container from the writer's(me) docker hub repo  
-3) Deploys a MySQL server on a Kubernetes cluster
-4) Attaches a persistent volume to it, so the data remains contained if pods are restarting
-5) Deploys a Flask API to add, delete and modify users in the MySQL database
+- [x] Build a Docker container running a CRUD Application using python and Flask 
+- [x] Pull pre-configured SQL server container from the writer's(me) docker hub repo  
+- [x] Deploys a MySQL server on a Kubernetes cluster
+- [x] Attaches a persistent volume to it, so the data remains contained if pods are restarting
+- [x] Deploys a Flask API to add, delete and modify users in the MySQL database
+- [ ] Automate deployment using helm. Coming Soon.
 
 #### Prerequisites for the host machine
  - hypervisor installed to use minikube
