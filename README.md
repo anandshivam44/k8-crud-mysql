@@ -14,17 +14,23 @@ Objective:
  - kubectl installed
 
 
-### Step 0: Clone this repo
-```
+### Step 0: Getting Started
+ - Clone this repo
+```bash
 git clone https://github.com/anandshivam44/k8-crud-mysql.git
 cd k8-crud-mysql
+```
+ - Configure `Docker` to use the `Docker daemon` in your kubernetes cluster via your terminal: 
+
+```bash
+eval $(minikube docker-env)
 ```
 ### Step 1: Build your python application into a Docker container 
 
 Here is the content of the Dockerfile. It installs necessary libraries and requirements.
 
 Our app flaskapi.py is running on port 5000 and hence exposing port 5000
-```
+```shell
 FROM python:3.6-slim
 
 RUN apt-get clean \
@@ -49,25 +55,25 @@ CMD [ "python", "flaskapi.py" ]
 
  - Build Docker image
 TODO: Replace "anandshivam44/crud-api-python:latest" with your own hub.docker.com username and container name in all of Step 1
-```
+```bash
 docker build . -t anandshivam44/crud-api-python:latest
 ```
  - Run image
-```
+```bash
 docker run -d -p 5000:5000  --name crud-api-python anandshivam44/crud-api-python:latest
 ```
  - Commit container
-```
+```bash
 docker commit [image-id]
 ```
  - Push the container to hub.docker.com
-```
+```bash
 docker push anandshivam44/crud-api-python:latest
 ```
 
 ### Step 2: Setup and test MySQL container
  - Pull my pre-configured MySQL container from anandshivam44/mysql:latest
-```
+```bash
 docker pull anandshivam44/mysql:latest
 ```
 About this container. What has already been done:
@@ -77,11 +83,11 @@ About this container. What has already been done:
 These two steps are already configured in this container to remove overhead, but you can always manually pull and configure your MySQL server.
 
  - Run the container
-```
+```bash
 docker container run -d -p 3306:3306 anandshivam44/mysql:latest
 ```
  - Check if the MySQL server can be accessed outside the container on the host machine
-```
+```bash
 mysql -uroot -ppassword -P3306 -h127.0.0.1 
 ```
 You can also access the database outside on the host machine using software like MySQL Workbench or DBeaver Community
@@ -91,7 +97,7 @@ You can also access the database outside on the host machine using software like
 secret.yaml: secret.yaml contains secrets such as Database username and password. All values are base64 encoded. These values are later referred to in mysql-deployment.yaml which is ultimately passed as environment variables to our crud-api-python container. Secrets should always be passed to the k8 cluster before they are used in pods anywhere.
 
 To generate base64 values use
-```
+```bash
 echo -n 'username' | base64
 echo -n 'password' | base64
 ```
@@ -99,7 +105,7 @@ Replace your own values with values in secret.yaml file
 Add more values as per your deployment/requirement
 <br/>
 ###### secret.yaml
-```
+```yaml
 
 # Add secrets to secret manager
 # All secrets are base64 encoded
@@ -125,12 +131,14 @@ mysql-deployment.yaml contains 3 yaml documents combined into 1 file because the
 <br/>
 
 ###### mysql-deployment.yaml
-```
+```yaml
+
 
 # Request a persistent volume
 # Add name and tabg
 # Set access mode policy to ReadWriteOnce
 # size of persistent volume is 2 Gb
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -218,7 +226,7 @@ configmap.yaml contains configurations/ConfigMap such as database URL. It passes
 <br/>
 
 ###### configmap.yaml
-```
+```yaml
 # name config map as 'sql-configmap'
 # get mysql server hostname/hosturl from 'sql-service'
 # 'sql-service' was created in 'mysql-deployment.yaml'
@@ -238,8 +246,8 @@ flaskapp-deployment.yaml has 2 yaml documents:
 
 <br/>
 
-###### flaskapp-deeployment.yaml
-```
+###### flaskapp-deployment.yaml
+```yaml
 
 
 # Create our CRUD App deployment with the name 'flaskapi'
@@ -317,7 +325,7 @@ spec:
 ```
 ##### Additional information 
 When our CRUD container/pod is run, it will try to connect to the database, If the database is not found in the MySQL server our python app will create a new database using
-```
+```sql
 CREATE DATABASE flaskapi;
 USE flaskapi;
 CREATE TABLE users(user_id INT PRIMARY KEY AUTO_INCREMENT, user_name VARCHAR(255), user_email VARCHAR(255), user_password VARCHAR(255));
@@ -325,27 +333,27 @@ CREATE TABLE users(user_id INT PRIMARY KEY AUTO_INCREMENT, user_name VARCHAR(255
 
 ### Step 4: Deploy your application into the k8 cluster  
  - Start minikube
-```
+```bash
 minikube start
 ```
  - Optional: to get everything fresh use 
-```
+```bash
 kubectl delete all --all
 ```
 This will clean up your k8 cluster
 A more cleaner way of doing is
-```
+```bash
 minikube delete
 minikube start
 ```
  - Add all secrets
-```
+```bash
 kubectl apply -f secret.yaml 
 
 kubectl get secret # to verify if secrets were added
 ```
  - Deploy your MySQL database
-```
+```bash
 
 kubectl apply -f mysql-deployment.yaml
 
@@ -360,7 +368,7 @@ kubectl get service # check if your service for MySQL is active
 kubectl describe service sql-service # describe service
 ```
  - Deploy CRUD/python/flask pod
-```
+```bash
 # apply ConfigMap before flask deployment since flask deployment needs database host URL from ConfigMap 
 kubectl apply -f configmap.yaml
 
@@ -368,7 +376,7 @@ kubectl apply -f configmap.yaml
 kubectl apply -f flaskapp-deployment.yml
 ```
  - Get Service and URL to access your Application
-```
+```bash
 kubectl get service # get/observe all services
 
 minikube service [service name] # get service url from minikube. Use this URL to access your CRUD Application
@@ -376,39 +384,39 @@ minikube service [service name] # get service url from minikube. Use this URL to
 
 ### Step 5: How to test your deployment
  - Get a Hello World response
-```
+```bash
 curl http://192.168.49.2:30000
 ```
  - Add a user to the database 
-```
+```bash
 curl -H "Content-Type: application/json" -d '{"name": "usernamw1234", "email": "emailid@provider.com", "pwd": "Password@1234"}' http://192.168.49.2:30000/create
 ```
 
  - Get all users
-```
+```bash
 curl http://192.168.49.2:30000/users
 ```
  - Get user details by index
-```
+```bash
 curl http://192.168.49.2:30000/user/1
 ```
  - Delete a user by user_id: 
-```
+```bash
 curl -H "Content-Type: application/json" -d '{"name": "<user_name>", "email": "<user_email>", "pwd": "<user_password>"}' <service_URL>/delete
 ```
  - Update a user's information: 
-```
+```bash
 curl -H "Content-Type: application/json" -d {"name": "<user_name>", "email": "<user_email>", "pwd": "<user_password>", "user_id": <user_id>} <service_URL>/update
 ```
 
 ### Step 6: Cleaning up
 Delete everything from the cluster
-```
+```bash
 kubectl delete all -all
 ```
 or
 Delete cluster, delete minikube virtual environment
-```
+```bash
 minikube delete
 ```
 
