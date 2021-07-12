@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: mysql-pv-claim
   labels:
-    app: sql-deployment
+    app: {{ .Values.sql.name }}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -14,24 +14,24 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sql-deployment
+  name: {{ .Values.sql.name }}
   labels:
-    app: mysql
+    app: {{ .Values.sql.appname }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: mysql
+      app: {{ .Values.sql.appname }}
   template:
     metadata:
       labels:
-        app: mysql
+        app: {{ .Values.sql.appname }}
     spec:
       containers:
-        - name: sql
-          image: anandshivam44/mysql
+        - name: {{ .Values.sql.name }}
+          image: {{ .Values.sql.container.image }} 
           ports:
-            - containerPort: 3306
+            - containerPort: {{ .Values.sql.container.port }}
           env:
             - name: MYSQL_DATABASE_USER
               valueFrom:
@@ -44,12 +44,12 @@ spec:
                   name: sql-secret
                   key: sql-root-password
           volumeMounts:
-            - name: mysql-persistent-storage
-              mountPath: /var/lib/mysql
+            - name: {{ .Values.sql.volume.name }}
+              mountPath: {{ .Values.sql.volume.mountPath }} 
       volumes:
-        - name: mysql-persistent-storage
+        - name: {{ .Values.sql.volume.name }}
           persistentVolumeClaim:
-            claimName: mysql-pv-claim
+            claimName: {{ .Values.sql.volume.pvc.name }}
 ---
 apiVersion: v1
 kind: Service
@@ -57,7 +57,7 @@ metadata:
   name: sql-service
 spec:
   selector:
-    app: mysql
+    app: {{ .Values.sql.appname }}
   ports:
     - protocol: TCP
       port: 3306

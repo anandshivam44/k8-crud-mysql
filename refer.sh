@@ -125,11 +125,6 @@ kubectl apply -f flaskapp-deployment.yml
 
 kubectl get service
 
-kubectl
-
-kubectl
-
-kubectl
-
+minikube service [name]
 
 
