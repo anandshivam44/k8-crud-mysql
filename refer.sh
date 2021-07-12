@@ -121,7 +121,7 @@ kubectl get all
 
 kubectl apply -f configmap.yaml
 
-kubectl apply -f flaskapp-deployment.yml
+kubectl apply -f flaskapp-deployment.yaml
 
 kubectl get service
 
