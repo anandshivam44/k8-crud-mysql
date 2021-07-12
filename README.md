@@ -17,6 +17,7 @@ Objective:
 ### Step 0: Clone this repo
 ```
 git clone https://github.com/anandshivam44/k8-crud-mysql.git
+cd k8-crud-mysql
 ```
 ### Step 1: Build your python application into a Docker container 
 
@@ -46,7 +47,8 @@ CMD [ "python", "flaskapi.py" ]
 
 ```
 
- - Build Docker image. Replace "anandshivam44/crud-api-python:latest" with your own hub.docker.com username and container name in Step 1
+ - Build Docker image
+TODO: Replace "anandshivam44/crud-api-python:latest" with your own hub.docker.com username and container name in all of Step 1
 ```
 docker build . -t anandshivam44/crud-api-python:latest
 ```
@@ -54,33 +56,33 @@ docker build . -t anandshivam44/crud-api-python:latest
 ```
 docker run -d -p 5000:5000  --name crud-api-python anandshivam44/crud-api-python:latest
 ```
- - Commit image
+ - Commit container
 ```
 docker commit [image-id]
 ```
- - Push the image to hub.docker.com
+ - Push the container to hub.docker.com
 ```
 docker push anandshivam44/crud-api-python:latest
 ```
 
-### Step 2: Step Pull MySQL container
-Pull my pre-configured MySQL container from anandshivam44/mysql:latest
+### Step 2: Setup and test MySQL container
+ - Pull my pre-configured MySQL container from anandshivam44/mysql:latest
 ```
 docker pull anandshivam44/mysql:latest
 ```
 About this container. What has already been done:
- - The container user 'root' password is set to 'password'
- - The container has been provisioned to be accessed outside the container.
+ 1) The container user 'root' password is set to 'password'
+ 2) The container has been provisioned to be accessed outside the container.
 
 These two steps are already configured in this container to remove overhead, but you can always manually pull and configure your MySQL server.
 
-Run the container
+ - Run the container
 ```
 docker container run -d -p 3306:3306 anandshivam44/mysql:latest
 ```
-Check if the MySQL server can be accessed outside the container on the host machine
+ - Check if the MySQL server can be accessed outside the container on the host machine
 ```
-mysql -uroot -ppassword -P3306 -h127.0.0.1
+mysql -uroot -ppassword -P3306 -h127.0.0.1 
 ```
 You can also access the database outside on the host machine using software like MySQL Workbench or DBeaver Community
 
@@ -115,10 +117,13 @@ data:
 ```
 #### - mysql-deployment.yaml
 mysql-deployment.yaml contains 3 yaml documents combined into 1 file because they all fall into the same category i.e. they serve MySQL database pod. They are 
- - Deployment: Contains config about MySQL deployment itself
- - Service: Contains information about networking rules of 'Deployment' or MySQL database
- - PersistentVolumeClaim: Forwards a proposal of the persistent volume of 2 Gb to be claimed. This volume is later claimed by 'Deployment'. So now our database will reside in persistent storage. Even if the pod is deleted our data is still not deleted. 
+ 1) Deployment: Contains config about MySQL deployment itself
+ 2) Service: Contains information about networking rules of 'Deployment' or MySQL database
+ 3) PersistentVolumeClaim: Forwards a proposal of the persistent volume of 2 Gb to be claimed. This volume is later claimed by 'Deployment'. So now our database will reside in persistent storage. Even if the pod is deleted our data is still not deleted. 
+
+
 <br/>
+
 ###### mysql-deployment.yaml
 ```
 
@@ -209,7 +214,9 @@ spec:
 
 #### - configmap.yaml
 configmap.yaml contains configurations/ConfigMap such as database URL. It passes the database URL to all the replica sets. It avoids the manual labour of configuring hostname in Frontend Applications. ConfigMap should always be executed before they are used in pods.
+
 <br/>
+
 ###### configmap.yaml
 ```
 # name config map as 'sql-configmap'
@@ -228,7 +235,9 @@ data:
 flaskapp-deployment.yaml has 2 yaml documents:
  - Deployment
  - Service: contains information about networking rules of 'Deployment' or our Flask Api pod deployment
+
 <br/>
+
 ###### flaskapp-deeployment.yaml
 ```
 
