@@ -45,7 +45,7 @@ eval $(minikube docker-env)
 ### Step 1: Build your python application into a Docker container 
 
 Here is the content of the Dockerfile. It installs necessary libraries and requirements.
-`Optional`: Prebuilt image cab be found at hub.docker.com/repository/docker/anandshivam44/crud-api-python
+`Optional`: Prebuilt image cab be found at https://hub.docker.com/repository/docker/anandshivam44/crud-api-python
 
 Our app flaskapi.py is running on port 5000 and hence exposing port 5000
 ```shell
@@ -72,7 +72,7 @@ CMD [ "python", "flaskapi.py" ]
 ```
 
  - Build Docker image
-TODO: Replace "anandshivam44/crud-api-python:latest" with your own hub.docker.com username and container name in all of Step 1
+TODO: Replace "anandshivam44/crud-api-python:latest" with your own https://hub.docker.com username and container name in all of Step 1
 ```bash
 docker build . -t anandshivam44/crud-api-python:latest
 ```
@@ -84,7 +84,7 @@ docker run -d -p 5000:5000  --name crud-api-python anandshivam44/crud-api-python
 ```bash
 docker commit [image-id]
 ```
- - Push the container to hub.docker.com
+ - Push the container to https://hub.docker.com
 ```bash
 docker push anandshivam44/crud-api-python:latest
 ```
@@ -99,7 +99,7 @@ About this container. What has already been done:
  2) The container has been provisioned to be accessed outside the container.
 
 These two steps are already configured in this container to remove overhead, but you can always manually pull and configure your MySQL server.
-Link to the container hub.docker.com/repository/docker/anandshivam44/mysql
+Link to the container https://hub.docker.com/repository/docker/anandshivam44/mysql
  - Run the container
 ```bash
 docker container run -d -p 3306:3306 anandshivam44/mysql:latest

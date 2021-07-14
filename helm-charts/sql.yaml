@@ -1,0 +1,9 @@
+sql:
+  config:
+    data:
+      - key: MYSQL_DATABASE_DB
+        value: flaskapi
+      - key: MYSQL_DATABASE_USER
+        value: root
+      - key: MYSQL_DATABASE_PASSWORD
+        value: password

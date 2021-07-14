@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: { { .values.sql.name } }
+  labels:
+    app: { { .values.sql.appname } }
+spec:
+  replicas: { { .values.sql.replicaCount } }
+  selector:
+    matchLabels:
+      app: { { .values.sql.appname } }
+  template:
+    metadata:
+      labels:
+        app: { { .values.sql.appname } }
+    spec:
+      containers:
+        - name: { { .values.sql.name } }
+          image: { { .values.sql.container.image } }
+          ports:
+            - containerPort: { { .values.sql.container.port } }
+          envFrom:
+            - configMapRef:
+                name: { { .values.sql.config.name } }
+          volumeMounts:
+            - name: { { .values.sql.volume.name } }
+              mountPath: { { .values.sql.volume.mountPath } }
+      volumes:
+        - name: { { .values.sql.volume.name } }
+          persistentVolumeClaim:
+            claimName: { { .values.sql.volume.pvname } }

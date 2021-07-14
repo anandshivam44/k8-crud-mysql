@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: { { .values.sql.service.name } }
+spec:
+  selector:
+    app: { { .values.sql.appname } }
+  ports:
+    - protocol: TCP
+      port: { { .values.sql.container.port } }
+      targetPort: { { .values.sql.container.port } }

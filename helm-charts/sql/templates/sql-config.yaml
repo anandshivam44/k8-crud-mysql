@@ -4,5 +4,5 @@ metadata:
   name: {{ .Values.sql.config.name }}
 data: 
 {{- range .Values.sql.config.data }}
-  {{ .key }}: {{ .value }}
+  {{.key }}: {{.value }}
 {{- end}}
