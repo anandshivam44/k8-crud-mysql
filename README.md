@@ -10,7 +10,7 @@ Objective:
 
 #### Prerequisites for the host machine
  - hypervisor installed to use minikube
- - minikube installed to start k8 cluster
+ - minikube installed to start k8s cluster
  - docker installed
  - kubectl installed
 
@@ -28,7 +28,7 @@ Objective:
 ├── mysql-deployment.yaml       yaml file to deploy mysql server
 ├── README.md                   this README file you are reading now
 ├── refer.sh                    a list of helpful commands
-└── secret.yaml                 yaml file to store secret in k8 cluster
+└── secret.yaml                 yaml file to store secret in k8s cluster
 ```
 ### Step 0: Getting Started
  - Clone this repo
@@ -113,7 +113,7 @@ You can also access the database outside on the host machine using software like
 
 ### Step 3: Prepare YAML files for Kubernetes Deployment
 #### - secret.yaml
-secret.yaml: secret.yaml contains secrets such as Database username and password. All values are base64 encoded. These values are later referred to in mysql-deployment.yaml which is ultimately passed as environment variables to our crud-api-python container. Secrets should always be passed to the k8 cluster before they are used in pods anywhere.
+secret.yaml: secret.yaml contains secrets such as Database username and password. All values are base64 encoded. These values are later referred to in mysql-deployment.yaml which is ultimately passed as environment variables to our crud-api-python container. Secrets should always be passed to the k8s cluster before they are used in pods anywhere.
 
 To generate base64 values use
 ```bash
@@ -350,7 +350,7 @@ USE flaskapi;
 CREATE TABLE users(user_id INT PRIMARY KEY AUTO_INCREMENT, user_name VARCHAR(255), user_email VARCHAR(255), user_password VARCHAR(255));
 ```
 
-### Step 4: Deploy your application into the k8 cluster  
+### Step 4: Deploy your application into the k8s cluster  
  - Start minikube
 ```bash
 minikube start
@@ -359,7 +359,7 @@ minikube start
 ```bash
 kubectl delete all --all
 ```
-This will clean up your k8 cluster
+This will clean up your k8s cluster
 A more cleaner way of doing is
 ```bash
 minikube delete
@@ -428,7 +428,7 @@ curl -H "Content-Type: application/json" -d '{"name": "<user_name>", "email": "<
 curl -H "Content-Type: application/json" -d {"name": "<user_name>", "email": "<user_email>", "pwd": "<user_password>", "user_id": <user_id>} <service_URL>/update
 ```
 
-### Step 6: Cleaning up
+### Step 6: Cleaning up 
 Delete everything from the cluster
 ```bash
 kubectl delete all -all
@@ -436,6 +436,418 @@ kubectl delete all -all
 or
 Delete cluster, delete minikube virtual environment
 ```bash
+minikube delete
+```
+
+## Part II: Deploy the same app in k8s using Helm
+Create a helm starter template for mysql database server deployment
+```bash
+helm create sql
+```
+
+Navigate to sql folder and Delete all the files inside template folder
+
+Inside template create 4 files
+1. sql-config.yaml
+2. sql-deployment.yaml
+3. sql-pvc.yaml
+4. sql-service.yaml
+
+These files will serve the same purpose as our previous deployment. Except that all our values will be replaced by 'variable like'.
+
+
+#### - sql-service.yaml
+
+<br/>
+
+###### sql-service.yaml
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.sql.service.name }}
+spec:
+  selector:
+    app: {{ .Values.sql.appname }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.sql.container.port }}
+      targetPort: {{ .Values.sql.container.port }}
+
+```
+
+#### - sql-config.yaml
+
+<br/>
+
+###### sql-config.yaml
+```yaml
+#apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.sql.config.name }}
+data: 
+{{- range .Values.sql.config.data }}
+  {{.key }}: {{.value }}
+{{- end}}
+```
+
+#### - sql-deployment.yaml
+
+<br/>
+
+###### sql-deployment.yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.sql.name }}
+  labels:
+    app: {{ .Values.sql.appname }}
+spec:
+  replicas: {{ .Values.sql.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.sql.appname }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.sql.appname }}
+    spec:
+      containers:
+        - name: {{ .Values.sql.name }}
+          image: {{ .Values.sql.container.image }}
+          ports:
+            - containerPort: {{ .Values.sql.container.port }}
+          # envFrom:
+          #   - configMapRef:
+          #       name: {{ .Values.sql.config.name }}
+          volumeMounts:
+            - name: {{ .Values.sql.volume.name }}
+              mountPath: {{ .Values.sql.volume.mountPath }}
+      volumes:
+        - name: {{ .Values.sql.volume.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.sql.volume.pvname }}
+
+```
+
+Your templates are now ready
+Now update your values.yaml
+
+#### - values.yaml
+
+<br/>
+
+###### value.yaml
+```yaml
+
+
+replicas: 1
+sql: 
+  name: mysql
+  replicaCount: 1
+  appname: sql
+  container:
+    image: anandshivam44/mysql
+    port: 3306
+    env:
+      name: sql-secret
+  service:
+    type: ClusterIP
+    port: 3306
+    name: sql-service
+    protocol: TCP
+  volume:
+    name: mysql-persistent-storage
+    kind: PersistentVolumeClaim
+    mountPath: /var/lib/mysql
+    pvc:
+      accessMode: ReadWriteOnce
+      storage: 2Gi
+    pvname: mysql-pv-claim
+  config:
+    name: sql-configmap
+    data:
+      - key: key
+        value: value
+
+```
+
+
+
+#### - Chart.yaml
+
+<br/>
+
+###### Chart.yaml
+```yaml
+apiVersion: v2
+name: sql
+description: A Helm chart for SQL database
+type: application
+version: 0.1.0
+appVersion: 1.16.0
+keywords:
+  - database
+  - sql
+# home: https://github.com/anandshivam44/k8-crud-mysql/tree/master/helm-charts
+maintainers:
+  - name: Shivam Anand
+    url: https://github.com/anandshivam44
+```
+
+#### - sql.yaml
+
+<br/>
+
+###### sql.yaml
+```yaml
+sql:
+  config:
+    data:
+      - key: MYSQL_DATABASE_DB
+        value: flaskapi
+      - key: MYSQL_DATABASE_USER
+        value: root
+      - key: MYSQL_DATABASE_PASSWORD
+        value: password
+      - key: MYSQL_DATABASE_HOST
+        value: sql-service
+      - key: database_url
+        value: sql-service
+
+```
+
+Our mysql helm charts are ready.
+
+
+Let's create helm templates for flask app deployment
+Create a helm starter template
+```bash
+helm create flaskapp
+```
+
+Navigate to flaskapp folder and Delete all the files inside template folder
+
+Inside template create 4 files
+1. flaskapp-deployment.yaml
+2. flaskapp-service.yaml
+
+These files will serve the same purpose as our previous deployment. Except that all our values will be replaced by 'variable like'.
+
+
+#### - flaskapp-service.yaml
+
+<br/>
+
+###### flaskapp-service.yaml
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.flaskapi.service.name }}
+spec:
+  selector:
+    app: {{ .Values.flaskapi.appname }}
+  type: {{ .Values.flaskapi.service.type }}
+  ports:
+    - protocol: {{ .Values.flaskapi.service.protocol }}
+      port: {{ .Values.flaskapi.service.port }}
+      targetPort: {{ .Values.flaskapi.service.port }}
+      nodePort: {{ .Values.flaskapi.service.nodePort }}
+
+```
+
+#### - flaskapp-deployment.yaml
+
+<br/>
+
+###### flaskapp-deployment.yaml
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.flaskapi.name }}
+  labels:
+    app: {{ .Values.flaskapi.appname }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.flaskapi.appname }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.flaskapi.appname }}
+    spec:
+      containers:
+        - name: crud-api-python
+          image: {{ .Values.flaskapi.container.image }}
+          ports:
+            - containerPort: {{ .Values.flaskapi.container.port }}
+          # envFrom:
+          #   {{- range .Values.flaskapi.container.config }}
+          #   - configMapRef:
+          #       name: {{ .name }}
+          #   {{- end}}
+          env:
+            {{- range .Values.flaskapi.config.data}}
+            - name: {{ .key}}
+              value: {{ .value}}
+            {{- end}}
+
+```
+
+Your templates are now ready
+Now update your values.yaml and Charts.yaml file
+
+#### - values.yaml
+
+<br/>
+
+###### value.yaml
+```yaml
+
+
+flaskapi:
+  name: flaskapi
+  group: flaskapi
+  appname: flaskapi
+  replicaCount: 1
+  container:
+    image: anandshivam44/crud-api-python
+    port: 5000
+    config: []
+    env:
+       - key: key
+         value: value
+  service:
+    name: flaskapi-service
+    type: LoadBalancer
+    port: 5000
+    nodePort: 30000
+    protocol: TCP
+  config:
+    name: sql-configmap
+    data:
+      - key: key
+        value: value
+
+```
+
+
+
+#### - Chart.yaml
+
+<br/>
+
+###### Chart.yaml
+```yaml
+apiVersion: v2
+name: app
+description: A Helm chart for any application
+type: application
+version: 0.1.0
+appVersion: 1.16.0
+keywords:
+  - app
+  - crud
+  - python
+  - fastapi
+home: https://github.com/anandshivam44/k8-crud-mysql/tree/master/helm-charts
+maintainers:
+  - name: Wojtek Krzywiec
+    url: https://github.com/anandshivam44
+```
+
+
+#### - flaskapp.yaml
+
+<br/>
+
+###### flaskapp.yaml
+```yaml
+flaskapi:
+  config:
+    data:
+      - key: MYSQL_DATABASE_DB
+        value: flaskapi
+      - key: MYSQL_DATABASE_USER
+        value: root
+      - key: MYSQL_DATABASE_PASSWORD
+        value: password
+      - key: MYSQL_DATABASE_HOST
+        value: sql-service
+
+```
+
+Our mysql helm charts are ready.
+
+Verify that charts don't have erros.
+```bash
+helm lint ./sql
+helm lint ./flaskapp
+```
+If both the commands show `0 chart(s) failed` you are good to go now.
+Install MySQL in one go
+```bash
+helm install -f sql.yaml sql ./sql
+```
+Install flaskapp in one go
+```bash
+helm install -f flaskapp.yaml flaskapp ./flaskapp
+```
+The syntax for installation is
+```bash
+helm install -f [overriding values file] [installation name] ./f[folder with helm charts]
+```
+
+#### Step Get your Service and URL to access your Application
+```bash
+kubectl get service # get/observe all services
+
+minikube service [service name] # get service url from minikube. Use this URL to access your CRUD Application
+```
+
+### Step : How to test your helm deployment
+ - Get a Hello World response
+```bash
+curl http://192.168.49.2:30000
+```
+ - Add a user to the database 
+```bash
+curl -H "Content-Type: application/json" -d '{"name": "usernamw1234", "email": "emailid@provider.com", "pwd": "Password@1234"}' http://192.168.49.2:30000/create
+```
+
+ - Get all users
+```bash
+curl http://192.168.49.2:30000/users
+```
+ - Get user details by index
+```bash
+curl http://192.168.49.2:30000/user/1
+```
+ - Delete a user by user_id: 
+```bash
+curl -H "Content-Type: application/json" -d '{"name": "<user_name>", "email": "<user_email>", "pwd": "<user_password>"}' <service_URL>/delete
+```
+ - Update a user's information: 
+```bash
+curl -H "Content-Type: application/json" -d {"name": "<user_name>", "email": "<user_email>", "pwd": "<user_password>", "user_id": <user_id>} <service_URL>/update
+```
+
+### Step 6: Cleaning up 
+Uninstall flaskapp deployment completely
+```bash
+helm uninstall flaskapp
+```
+Uninstall mysql deployment completely
+```bash
+helm uninstall sql
+```
+Leave no trace  : D
+```
 minikube delete
 ```
 
