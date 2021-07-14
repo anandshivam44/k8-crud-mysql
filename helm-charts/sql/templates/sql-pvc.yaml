@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: { { .values.sql.volume.pvname } }
+  name: {{ .Values.sql.volume.pvname }}
   labels:
-    app: { { .values.sql.name } }
+    app: {{ .Values.sql.name }}
 spec:
   accessModes:
-    - { { .values.sql.volume.pvc.accessMode } }
+    - {{ .Values.sql.volume.pvc.accessMode }}
   resources:
     requests:
-      storage: { { .values.sql.volume.pvc.storage } }
+      storage: {{ .Values.sql.volume.pvc.storage }}

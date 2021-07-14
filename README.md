@@ -45,7 +45,8 @@ eval $(minikube docker-env)
 ### Step 1: Build your python application into a Docker container 
 
 Here is the content of the Dockerfile. It installs necessary libraries and requirements.
-`Optional`: Prebuilt image cab be found at https://hub.docker.com/repository/docker/anandshivam44/crud-api-python
+
+`Optional`: Prebuilt image can be found at https://hub.docker.com/repository/docker/anandshivam44/crud-api-python
 
 Our app flaskapi.py is running on port 5000 and hence exposing port 5000
 ```shell

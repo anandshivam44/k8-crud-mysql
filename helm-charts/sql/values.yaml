@@ -1,5 +1,5 @@
 replicas: 1
-sql:
+sql: 
   name: mysql
   replicaCount: 1
   appname: sql

@@ -1,31 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: { { .values.sql.name } }
+  name: {{ .Values.sql.name }}
   labels:
-    app: { { .values.sql.appname } }
+    app: {{ .Values.sql.appname }}
 spec:
-  replicas: { { .values.sql.replicaCount } }
+  replicas: {{ .Values.sql.replicaCount }}
   selector:
     matchLabels:
-      app: { { .values.sql.appname } }
+      app: {{ .Values.sql.appname }}
   template:
     metadata:
       labels:
-        app: { { .values.sql.appname } }
+        app: {{ .Values.sql.appname }}
     spec:
       containers:
-        - name: { { .values.sql.name } }
-          image: { { .values.sql.container.image } }
+        - name: {{ .Values.sql.name }}
+          image: {{ .Values.sql.container.image }}
           ports:
-            - containerPort: { { .values.sql.container.port } }
-          envFrom:
-            - configMapRef:
-                name: { { .values.sql.config.name } }
+            - containerPort: {{ .Values.sql.container.port }}
+          # envFrom:
+          #   - configMapRef:
+          #       name: {{ .Values.sql.config.name }}
           volumeMounts:
-            - name: { { .values.sql.volume.name } }
-              mountPath: { { .values.sql.volume.mountPath } }
+            - name: {{ .Values.sql.volume.name }}
+              mountPath: {{ .Values.sql.volume.mountPath }}
       volumes:
-        - name: { { .values.sql.volume.name } }
+        - name: {{ .Values.sql.volume.name }}
           persistentVolumeClaim:
-            claimName: { { .values.sql.volume.pvname } }
+            claimName: {{ .Values.sql.volume.pvname }}

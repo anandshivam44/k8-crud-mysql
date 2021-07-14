@@ -1,0 +1,55 @@
+Name:         flaskapi-76f6668cb6-sd74t
+Namespace:    default
+Priority:     0
+Node:         minikube/192.168.49.2
+Start Time:   Wed, 14 Jul 2021 18:51:05 +0530
+Labels:       app=flaskapi
+              pod-template-hash=76f6668cb6
+Annotations:  <none>
+Status:       Running
+IP:           172.17.0.4
+IPs:
+  IP:           172.17.0.4
+Controlled By:  ReplicaSet/flaskapi-76f6668cb6
+Containers:
+  crud-api-python:
+    Container ID:   docker://a77865706ff728f244d4a34842363a55537069ebe11ccc9f8121b399d659e2ad
+    Image:          anandshivam44/crud-api-python
+    Image ID:       docker-pullable://anandshivam44/crud-api-python@sha256:948bad732a0091330986cd043e53407740e7ca1dbf61126716651795bad99132
+    Port:           5000/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Wed, 14 Jul 2021 18:53:53 +0530
+    Ready:          True
+    Restart Count:  0
+    Environment:
+      key:  value
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-n6cmv (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  default-token-n6cmv:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-n6cmv
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                 node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason     Age                    From               Message
+  ----     ------     ----                   ----               -------
+  Normal   Scheduled  3m40s                  default-scheduler  Successfully assigned default/flaskapi-76f6668cb6-sd74t to minikube
+  Warning  Failed     2m57s                  kubelet            Failed to pull image "anandshivam44/crud-api-python": rpc error: code = Unknown desc = error pulling image configuration: Get https://production.cloudflare.docker.com/registry-v2/docker/registry/v2/blobs/sha256/42/42cb22505cb3e260ca42963f8f211e4731f9fcf08f952ac64120e72dfab61f26/data?verify=1626271903-XtNm0TtMOPZ%2FYeavzNu7kJ02reU%3D: read tcp 192.168.49.2:35292->104.18.121.25:443: read: connection reset by peer
+  Warning  Failed     2m57s                  kubelet            Error: ErrImagePull
+  Normal   BackOff    2m56s                  kubelet            Back-off pulling image "anandshivam44/crud-api-python"
+  Warning  Failed     2m56s                  kubelet            Error: ImagePullBackOff
+  Normal   Pulling    2m43s (x2 over 3m38s)  kubelet            Pulling image "anandshivam44/crud-api-python"
+  Normal   Pulled     52s                    kubelet            Successfully pulled image "anandshivam44/crud-api-python" in 1m50.326012392s
+  Normal   Created    52s                    kubelet            Created container crud-api-python
+  Normal   Started    52s                    kubelet            Started container crud-api-python

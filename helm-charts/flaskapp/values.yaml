@@ -1,0 +1,24 @@
+flaskapi:
+  name: flaskapi
+  group: flaskapi
+  appname: flaskapi
+  replicaCount: 1
+  container:
+    image: anandshivam44/crud-api-python
+    port: 5000
+    config: []
+    env:
+       - key: key
+         value: value
+  service:
+    name: flaskapi-service
+    type: LoadBalancer
+    port: 5000
+    nodePort: 30000
+    protocol: TCP
+  config:
+    name: sql-configmap
+    data:
+      - key: key
+        value: value
+  

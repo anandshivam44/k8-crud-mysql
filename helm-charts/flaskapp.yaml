@@ -1,4 +1,4 @@
-sql:
+flaskapi:
   config:
     data:
       - key: MYSQL_DATABASE_DB
@@ -9,6 +9,3 @@ sql:
         value: password
       - key: MYSQL_DATABASE_HOST
         value: sql-service
-      - key: database_url
-        value: sql-service
-

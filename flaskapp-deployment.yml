@@ -18,28 +18,28 @@ spec:
         - name: crud-api-python
           image: anandshivam44/crud-api-python
           ports:
-          - containerPort: 5000
+            - containerPort: 5000
           env:
-           - name: MYSQL_DATABASE_USER
-             valueFrom:
-               secretKeyRef:
-                 name: sql-secret
-                 key: sql-root-username
-           - name: MYSQL_DATABASE_PASSWORD
-             valueFrom: 
-               secretKeyRef:
-                 name: sql-secret
-                 key: sql-root-password
-           - name: MYSQL_DATABASE_DB
-             valueFrom: 
-               secretKeyRef:
-                 name: sql-secret
-                 key: sql-root-database-name
-           - name: MYSQL_DATABASE_HOST
-             valueFrom: 
-               configMapKeyRef:
-                 name: sql-configmap
-                 key: database_url
+            - name: MYSQL_DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: sql-secret
+                  key: sql-root-username
+            - name: MYSQL_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sql-secret
+                  key: sql-root-password
+            - name: MYSQL_DATABASE_DB
+              valueFrom:
+                secretKeyRef:
+                  name: sql-secret
+                  key: sql-root-database-name
+            - name: MYSQL_DATABASE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: sql-configmap
+                  key: database_url
 
 ---
 apiVersion: v1
@@ -55,4 +55,3 @@ spec:
       port: 5000
       targetPort: 5000
       nodePort: 30000
-
