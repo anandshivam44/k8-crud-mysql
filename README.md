@@ -6,7 +6,7 @@ Objective:
 - [x] Deploys a MySQL server on a Kubernetes cluster
 - [x] Attaches a persistent volume to it, so the data remains contained if pods are restarting
 - [x] Deploys a Flask API to add, delete and modify users in the MySQL database
-- [ ] Automate deployment using helm. `coming soon`.
+- [x] Automate deployment using helm.
 
 #### Prerequisites for the host machine
  - hypervisor installed to use minikube
@@ -17,24 +17,46 @@ Objective:
 #### tree . 
 ```markdown
 .
-├── configmap.yaml              ConfigMap to get service url
-├── crud-application            
-│   ├── Dockerfile              Dockerfile to build your own image
-│   ├── flaskapi.py             CRUD API python application using Flask
-│   └── requirements.txt        contains all libraries needed by python application
-├── flaskapi-testing.py         a python crud application for testing
-├── flaskapp-deployment.yml     yaml file to deploy your CRUD Application
-├── helm-charts                 helm charts coming soon
-├── mysql-deployment.yaml       yaml file to deploy mysql server
-├── README.md                   this README file you are reading now
-├── refer.sh                    a list of helpful commands
-└── secret.yaml                 yaml file to store secret in k8s cluster
+├── crud-application
+│   ├── Dockerfile                          Dockerfile to build your own image
+│   ├── flaskapi.py                         CRUD API python application using Flask
+│   ├── flaskapi-testing.py                 Test python file to test on host machine
+│   └── requirements.txt                    contains all libraries needed by python application
+├── helm-charts                             contains helm charts for part II of our documentation                 
+│   ├── flaskapp
+│   │   ├── charts
+│   │   ├── Chart.yaml
+│   │   ├── templates                       -- helm templates corresponds to files in k8s folder
+│   │   │   ├── flaskapp-deployment.yml     
+│   │   │   └── service.yaml
+│   │   └── values.yaml                     contains values for helm templates
+│   ├── flaskapp.yaml
+│   ├── imagepullbackoff.logs
+│   ├── sql
+│   │   ├── charts
+│   │   ├── Chart.yaml
+│   │   ├── templates                       -- helm templates corresponds to files in k8s folder
+│   │   │   ├── sql-config.yaml
+│   │   │   ├── sql-deployment.yaml
+│   │   │   ├── sql-pvc.yaml
+│   │   │   └── sql-service.yaml
+│   │   └── values.yaml                    contains values for helm templates
+│   └── sql.yaml
+├── k8s                                    Files for k8s deployment
+│   ├── configmap.yaml                     ConfigMap to get service url
+│   ├── flaskapp-deployment.yml            yaml file to deploy flaskapp
+│   ├── mysql-deployment.yaml              yaml file to deploy mysql server
+│   └── secret.yaml                        yaml file to store secret in k8s cluster
+├── README.md                              this README file you are reading now
+└── refer.sh                               a list of helpful commands
+
+9 directories, 23 files
 ```
 ### Step 0: Getting Started
  - Clone this repo
 ```bash
 git clone https://github.com/anandshivam44/k8-crud-mysql.git
-cd k8-crud-mysql
+cd k8-crud-mysql/crud-application/
 ```
  - Configure `Docker` to use the `Docker daemon` in your kubernetes cluster via your terminal: 
 
@@ -110,6 +132,12 @@ docker container run -d -p 3306:3306 anandshivam44/mysql:latest
 mysql -uroot -ppassword -P3306 -h127.0.0.1 
 ```
 You can also access the database outside on the host machine using software like MySQL Workbench or DBeaver Community
+
+We are done with testing and building Docker Files. Move to k8s folder.
+```bash
+cd ..
+cd k8s
+```
 
 ### Step 3: Prepare YAML files for Kubernetes Deployment
 #### - secret.yaml
@@ -438,26 +466,35 @@ Delete cluster, delete minikube virtual environment
 ```bash
 minikube delete
 ```
+We are done with testing and deploying on k8s. Move to helm-charts folder.
+```bash
+cd ..
+cd helm-charts
+```
 
 ## Part II: Deploy the same app in k8s using Helm
-Create a helm starter template for mysql database server deployment
+### Step 7: Create helm charts for mysql
+ - Create a helm starter template for mysql database server deployment
 ```bash
 helm create sql
 ```
+ - Inside `heml-charts/sql/templates` folder
 
-Navigate to sql folder and Delete all the files inside template folder
-
-Inside template create 4 files
+Inside template folder create 4 files
 1. sql-config.yaml
 2. sql-deployment.yaml
 3. sql-pvc.yaml
 4. sql-service.yaml
 
+
+
 These files will serve the same purpose as our previous deployment. Except that all our values will be replaced by 'variable like'.
+All `{{ .Values.xx.yy }}` variables will be replaced by values from `values.yaml` file. We will create our `values.yaml` file soon.
 
 
+--Start creating these files below--
 #### - sql-service.yaml
-
+Creates Service for our sql pod. We have discussed about these file above.
 <br/>
 
 ###### sql-service.yaml
@@ -533,16 +570,15 @@ spec:
 ```
 
 Your templates are now ready
-Now update your values.yaml
+Now update your values.yaml but first match your directory to `k8-crud-mysql/helm-charts/sql`. you can always see and match the `tree .` in the beginning of this documentation.
 
+ - Now update your `values.yaml` and `Charts.yaml` file
 #### - values.yaml
 
 <br/>
 
 ###### value.yaml
 ```yaml
-
-
 replicas: 1
 sql: 
   name: mysql
@@ -621,7 +657,7 @@ sql:
 
 Our mysql helm charts are ready.
 
-
+### Step 8: Create helm charts for flaskapp
 Let's create helm templates for flask app deployment
 Create a helm starter template
 ```bash
@@ -700,7 +736,9 @@ spec:
 ```
 
 Your templates are now ready
-Now update your values.yaml and Charts.yaml file
+Now update your values.yaml but first match your directory to `k8-crud-mysql/helm-charts/flaskapp`. you can always see and match the `tree .` in the beginning of this documentation.
+
+ - Now update your `values.yaml` and `Charts.yaml` file
 
 #### - values.yaml
 
@@ -783,18 +821,18 @@ flaskapi:
 ```
 
 Our mysql helm charts are ready.
-
-Verify that charts don't have erros.
+### Step 9: Deploy using helm
+ - Verify that charts don't have erros.
 ```bash
 helm lint ./sql
 helm lint ./flaskapp
 ```
 If both the commands show `0 chart(s) failed` you are good to go now.
-Install MySQL in one go
+ - Install MySQL in one go
 ```bash
 helm install -f sql.yaml sql ./sql
 ```
-Install flaskapp in one go
+ - Install flaskapp in one go
 ```bash
 helm install -f flaskapp.yaml flaskapp ./flaskapp
 ```
@@ -803,14 +841,15 @@ The syntax for installation is
 helm install -f [overriding values file] [installation name] ./f[folder with helm charts]
 ```
 
-#### Step Get your Service and URL to access your Application
+### Step 10: Get your Service and URL to access your Application
 ```bash
 kubectl get service # get/observe all services
 
 minikube service [service name] # get service url from minikube. Use this URL to access your CRUD Application
 ```
+You will get an URl. Use this URL to browse your application.
 
-### Step : How to test your helm deployment
+### Step 11: How to test your helm deployment
  - Get a Hello World response
 ```bash
 curl http://192.168.49.2:30000
@@ -837,7 +876,7 @@ curl -H "Content-Type: application/json" -d '{"name": "<user_name>", "email": "<
 curl -H "Content-Type: application/json" -d {"name": "<user_name>", "email": "<user_email>", "pwd": "<user_password>", "user_id": <user_id>} <service_URL>/update
 ```
 
-### Step 6: Cleaning up 
+### Step 12: Cleaning up 
 Uninstall flaskapp deployment completely
 ```bash
 helm uninstall flaskapp
