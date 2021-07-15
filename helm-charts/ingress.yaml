@@ -1,0 +1,8 @@
+ingress:
+  hosts:
+    - host: helloworld.com
+      paths:
+        - path: /
+          backend:  
+            serviceName: flaskapi-service
+            servicePort: 80

@@ -875,6 +875,105 @@ curl -H "Content-Type: application/json" -d '{"name": "<user_name>", "email": "<
 ```bash
 curl -H "Content-Type: application/json" -d {"name": "<user_name>", "email": "<user_email>", "pwd": "<user_password>", "user_id": <user_id>} <service_URL>/update
 ```
+### Step 12: Add ingress and test again
+```bash
+minikube addons enable ingress
+```
+ - create helm template for ingress yaml files
+```bash
+helm create ingress
+```
+ - Remove all files from `templates` folder and clear content of `values.yaml`.
+
+#### - Chart.yaml
+
+<br/>
+
+###### Chart.yaml
+```yaml
+apiVersion: v2
+name: ingress
+description: A Helm chart for Ingress Controller
+type: application
+version: 0.1.0
+appVersion: 1.16.0
+keywords:
+  - ingress
+  - nginx
+  - api-gateway
+home: https://github.com/wkrzywiec/k8s-helm-helmfile/tree/master/helm
+maintainers:
+  - name: Wojtek Krzywiec
+    url: https://github.com/wkrzywiec
+dependencies:
+  - name: nginx-ingress
+    version: 1.36.0
+    repository: https://charts.helm.sh/stable
+
+```
+```bash
+helm dependency update ./ingress/
+```
+
+#### - values.yaml
+
+<br/>
+
+###### values.yaml
+```yaml
+ingress:
+  name: ingress-service
+  replicaCount: 1
+  annotations: 
+    class: nginx
+  hosts:
+    - host: chart-example.local
+      paths: 
+        - path: /
+          backend:
+            serviceName: serviceName
+            servicePort: 8080
+
+```
+
+#### - ingress.yaml
+
+<br/>
+
+###### ingress.yaml
+```yaml
+ingress:
+  hosts:
+    - host: helloworld.com
+      paths:
+        - path: /
+          backend:  
+            serviceName: flaskapi-service
+            servicePort: 80
+```
+
+ - add minikube ip address to `/etc/hosts`
+```
+minikube ip
+```
+```
+sudo nano /etc/hots # for linux systems only
+```
+Add 
+```
+192.168.49.2  helloworld.com
+```
+to the end of the file
+ - install ingress controller
+```
+helm install -f ingress.yaml ingress ./ingress
+```
+Wait for pods to go create
+ - Test your connection
+```
+curl helloworld.com:30000
+```
+
 
 ### Step 12: Cleaning up 
 Uninstall flaskapp deployment completely
